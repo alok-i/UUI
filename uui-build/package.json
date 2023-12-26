@@ -8,6 +8,7 @@
     "build": "node ../uui-build/scripts/buildModule",
     "generate-components-api": "ts-node scripts/ts/docsGen.ts",
     "generate-tokens": "ts-node scripts/ts/figmaTokensGen.ts",
+    "generate-scss-core-mixins": "ts-node ts/scssCoreMixinGen/main.ts",
     "prepublish": "yarn build",
     "track-bundle-size": "ts-node scripts/ts/trackBundleSize.ts",
     "lint": "node ../uui-build/scripts/lint",
