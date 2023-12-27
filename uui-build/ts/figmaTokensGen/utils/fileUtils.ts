@@ -15,11 +15,8 @@ export class FileUtils {
         },
     ) {
         const { newFigmaVarCollection, uuiTokensCollection } = params;
-        const outDir = path.resolve(uuiRoot, PATH.RESULTS_DIR);
-        const extName = path.extname(PATH.FIGMA_VARS_COLLECTION_SRC);
-        const sourceFileNameNoExt = path.basename(PATH.FIGMA_VARS_COLLECTION_SRC, extName);
-        const resultPath = forwardSlashes(path.resolve(outDir, `${sourceFileNameNoExt}Output${extName}`));
-        const uuiTokensCollectionPath = forwardSlashes(path.resolve(outDir, `${sourceFileNameNoExt}Tokens${extName}`));
+        const resultPath = forwardSlashes(path.resolve(uuiRoot, PATH.FIGMA_VARS_COLLECTION_OUT));
+        const uuiTokensCollectionPath = forwardSlashes(path.resolve(uuiRoot, PATH.FIGMA_VARS_COLLECTION_OUT_TOKENS));
         fs.writeFileSync(resultPath, JSON.stringify(newFigmaVarCollection, undefined, 2));
         fs.writeFileSync(uuiTokensCollectionPath, JSON.stringify(uuiTokensCollection, undefined, 2));
         logger.success(`Files created:\n${resultPath}\n${uuiTokensCollectionPath}`);

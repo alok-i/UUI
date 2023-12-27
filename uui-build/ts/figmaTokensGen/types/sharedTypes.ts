@@ -40,8 +40,7 @@ export interface IThemeVar {
     type: TVarType,
     description: string,
     useCases: string,
-    /** cssVarName has value only if it's "resolved" */
-    cssVar: TUuiCssVarName | undefined,
+    cssVar: TUuiCssVarName,
     /** resolvedValue in this map is taken from Figma. It can be used to compare with actual rendered value in browser */
     valueByTheme: {
         [themeName in TFigmaThemeName]?: TValueByThemeValue
