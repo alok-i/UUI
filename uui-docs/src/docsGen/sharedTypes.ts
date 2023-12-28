@@ -43,7 +43,7 @@ export type TTypeProp = {
     name: string;
     typeValue: TTypeValue;
     typeValueRef?: TTypeRef;
-    editor: TPropEditor;
+    editor: TPropEditor | undefined;
     required: boolean;
     comment?: TComment;
     from?: TTypeRef;

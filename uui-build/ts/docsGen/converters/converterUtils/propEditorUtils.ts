@@ -16,7 +16,11 @@ export class PropEditorUtils {
             [TPropEditorType.oneOf]: {
                 condition: (t: Type) => t.isLiteral(),
                 paramsBuilder: (t: Type): TOneOfItemType[] => {
-                    return [PropEditorUtils.getLiteralValueFromType(t)];
+                    const v = PropEditorUtils.getLiteralValueFromType(t);
+                    if (v !== undefined) {
+                        return [v];
+                    }
+                    return [];
                 },
             },
             [TPropEditorType.string]: {
@@ -69,7 +73,7 @@ export class PropEditorUtils {
     static getPropEditorByUnionType(unionType: Type): TPropEditor | undefined {
         const typeArr = unionType.getUnionTypes();
         let canBeNull = false;
-        const arrNorm = typeArr.reduce((acc, ta) => {
+        const arrNorm = typeArr.reduce<Type[]>((acc, ta) => {
             if (ta.isUndefined()) {
                 return acc;
             } else if (ta.isNull()) {
@@ -88,9 +92,13 @@ export class PropEditorUtils {
                         type: TPropEditorType.bool,
                     };
                 }
-                const options = arrNorm.map((t) => {
-                    return PropEditorUtils.getLiteralValueFromType(t);
-                });
+                const options = arrNorm.reduce<TOneOfItemType[]>((acc, t) => {
+                    const v = PropEditorUtils.getLiteralValueFromType(t);
+                    if (v !== undefined) {
+                        acc.push(v);
+                    }
+                    return acc;
+                }, []);
                 if (canBeNull) {
                     options.push(null);
                 }

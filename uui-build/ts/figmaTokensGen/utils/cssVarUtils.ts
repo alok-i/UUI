@@ -2,7 +2,6 @@ import {
     IFigmaVar, IFigmaVarCollection, TFigmaVariableAlias,
     TRgbaValue,
 } from '../types/sourceTypes';
-import { CONFIG } from '../config';
 import { rgbaToHEXA } from './colorUtils';
 import {
     IThemeVar,
@@ -13,18 +12,45 @@ import {
     TUuiCssVarName,
     TVarType,
 } from '../types/sharedTypes';
+import { FIGMA_VARS_CFG, IFigmaVarConfigValue } from '../config';
 
-export function getCssVarFromFigmaVar(figmaVarPath: string): TUuiCssVarName {
-    const tokens = figmaVarPath.split('/');
-    const lastToken = tokens[tokens.length - 1];
-    return `--uui-${lastToken}`;
+export function getCssVarFromFigmaVar(path: string): TUuiCssVarName | undefined {
+    const config = getFigmaVarConfig(path);
+    if (config) {
+        return config.pathToCssVar(path);
+    }
 }
 
-export function isCssVarSupportedByUui(figmaVarPath: string) {
-    const isIgnoredByConvention = figmaVarPath.indexOf('core/') !== 0;
-    const cssVarName = getCssVarFromFigmaVar(figmaVarPath);
-    const isIgnoredByConfig = CONFIG.tokens[cssVarName]?.supported === false;
-    return !isIgnoredByConvention && !isIgnoredByConfig;
+/**
+ * If "theme" is passed then it checks against this theme only.
+ * Otherwise - it checks that it's supported in at least 1 theme.
+ * @param params
+ */
+export function isFigmaVarSupported(params: { path: string, theme?: TFigmaThemeName }) {
+    const { path, theme } = params;
+    const config = getFigmaVarConfig(path);
+    if (config) {
+        const { blacklist, whitelist, pathToCssVar } = config;
+        const cssVar = pathToCssVar(path);
+        let isIncludedByWhiteList = true;
+        if (whitelist) {
+            if (theme) {
+                const themeSpecificWl = whitelist[theme];
+                isIncludedByWhiteList = themeSpecificWl.indexOf(cssVar) !== -1;
+            } else {
+                isIncludedByWhiteList = Object.values(TFigmaThemeName).some((themeItem) => {
+                    const themeSpecificWl = whitelist[themeItem];
+                    return themeSpecificWl.indexOf(cssVar) !== -1;
+                });
+            }
+        }
+        let isIncludedByBlackList = true;
+        if (blacklist) {
+            isIncludedByBlackList = blacklist.indexOf(cssVar) === -1;
+        }
+        return isIncludedByWhiteList && isIncludedByBlackList;
+    }
+    return false;
 }
 
 export function getNormalizedResolvedValueMap(
@@ -39,13 +65,15 @@ export function getNormalizedResolvedValueMap(
 
     return themeIdArr.reduce<IThemeVar['valueByTheme']>((acc, themeId) => {
         const themeName = modes[themeId] as TFigmaThemeName;
-        const valueChain = getNormalizedResolvedValue({ figmaVar, themeId, figmaVarById, mode: 'chain' });
-        const valueDirect = getNormalizedResolvedValue({ figmaVar, themeId, figmaVarById, mode: 'direct' });
-
-        acc[themeName] = {
-            valueChain,
-            valueDirect,
-        };
+        const supported = isFigmaVarSupported({ path: figmaVar.name, theme: themeName });
+        if (supported) {
+            const valueChain = getNormalizedResolvedValue({ figmaVar, themeId, theme: themeName, figmaVarById, mode: 'chain' });
+            const valueDirect = getNormalizedResolvedValue({ figmaVar, themeId, theme: themeName, figmaVarById, mode: 'direct' });
+            acc[themeName] = {
+                valueChain,
+                valueDirect,
+            };
+        }
         return acc;
     }, {});
 }
@@ -55,14 +83,16 @@ function getNormalizedResolvedValue(
         figmaVar: IFigmaVar,
         figmaVarById: Record<string, IFigmaVar>,
         themeId: string,
+        theme: TFigmaThemeName,
         mode: 'chain' | 'direct'
     },
 ): TResolvedValueNorm {
-    const { figmaVarById, mode, themeId } = params;
+    const { figmaVarById, mode, themeId, theme } = params;
     if (params.mode === 'direct') {
         const item = params.figmaVar.resolvedValuesByMode[params.themeId];
         const value = getNormalizedValue({ type: params.figmaVar.type, value: item.resolvedValue });
-        const alias = getNormalizedAlias((item as { aliasName: string })?.aliasName);
+        const aliasPath = (item as { aliasName: string })?.aliasName;
+        const alias = getNormalizedAlias({ path: aliasPath, theme });
         return {
             alias,
             value,
@@ -73,9 +103,9 @@ function getNormalizedResolvedValue(
         if ((item as TFigmaVariableAlias).type) {
             const { id } = item as TFigmaVariableAlias;
             const nextVar = params.figmaVarById[id];
-            const nextVarAlias = getNormalizedAlias(nextVar.name);
+            const nextVarAlias = getNormalizedAlias({ path: nextVar.name, theme });
 
-            const { value, alias } = getNormalizedResolvedValue({ figmaVar: nextVar, figmaVarById, mode, themeId });
+            const { value, alias } = getNormalizedResolvedValue({ figmaVar: nextVar, figmaVarById, mode, themeId, theme });
             return {
                 value,
                 alias: nextVarAlias.concat(alias),
@@ -91,15 +121,23 @@ function getNormalizedResolvedValue(
 }
 
 // aliasName is a path
-function getNormalizedAlias(aliasName: string | undefined): TCssVarRef[] {
-    if (aliasName) {
-        const supported = isCssVarSupportedByUui(aliasName);
-        const cssVar = getCssVarFromFigmaVar(aliasName);
-        return [{
-            id: aliasName,
-            cssVar,
-            supported,
-        }];
+function getNormalizedAlias(params: { path: string | undefined, theme: TFigmaThemeName }): TCssVarRef[] {
+    const { path, theme } = params;
+    if (path) {
+        const supported = isFigmaVarSupported({ path, theme });
+        if (supported) {
+            const cssVar = getCssVarFromFigmaVar(path) as TUuiCssVarName;
+            return [{
+                id: path,
+                cssVar,
+                supported: true,
+            }];
+        } else {
+            return [{
+                id: path,
+                supported: false,
+            }];
+        }
     }
     return [];
 }
@@ -113,4 +151,9 @@ function getNormalizedValue(params: { type: TVarType, value: unknown }) {
             return params.value as TFloatValue;
         }
     }
+}
+
+function getFigmaVarConfig(path: string): IFigmaVarConfigValue | undefined {
+    const key = path.split('/')[0] + '/';
+    return FIGMA_VARS_CFG[key];
 }

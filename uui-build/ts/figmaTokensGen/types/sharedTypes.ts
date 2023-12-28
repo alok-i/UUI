@@ -14,7 +14,7 @@ export enum TFigmaThemeName {
 }
 export type TFloatValue = number;
 export type THexaValue = `#${string}`;
-export type TUuiCssVarName = `--uui-${string}`;
+export type TUuiCssVarName = `--${string}`;
 export enum TVarType {
     COLOR = 'COLOR',
     FLOAT = 'FLOAT'
@@ -22,9 +22,9 @@ export enum TVarType {
 
 export type TCssVarRef = {
     id: IThemeVar['id'],
-    cssVar: IThemeVar['cssVar'],
-    supported: boolean,
-};
+} & (
+    { cssVar: IThemeVar['cssVar'], supported: true } | { supported: false }
+);
 export type TResolvedValueNorm = {
     value: THexaValue | TFloatValue
     alias: TCssVarRef[],

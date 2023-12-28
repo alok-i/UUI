@@ -4,10 +4,9 @@ import { FigmaScriptsContext } from './context/context';
 import { logger } from '../jsBridge';
 import {
     getCssVarFromFigmaVar,
-    isCssVarSupportedByUui,
-    getNormalizedResolvedValueMap,
+    getNormalizedResolvedValueMap, isFigmaVarSupported,
 } from './utils/cssVarUtils';
-import { IThemeVar } from './types/sharedTypes';
+import { IThemeVar, TUuiCssVarName } from './types/sharedTypes';
 import { IFigmaVar } from './types/sourceTypes';
 
 export function main() {
@@ -24,14 +23,15 @@ function generateTokens() {
     const source = FileUtils.readFigmaVarCollection();
     const supportedTokens: IThemeVar[] = [];
 
+    // non-filtered map
     const figmaVarById = source.variables.reduce<Record<string, IFigmaVar>>((acc, figmaVar) => {
         acc[figmaVar.id] = figmaVar;
         return acc;
     }, {});
 
     const variables = source.variables.map((figmaVar) => {
-        const cssVar = getCssVarFromFigmaVar(figmaVar.name);
-        const supported = isCssVarSupportedByUui(figmaVar.name);
+        const cssVar = getCssVarFromFigmaVar(figmaVar.name) as TUuiCssVarName;
+        const supported = isFigmaVarSupported({ path: figmaVar.name });
         if (supported) {
             supportedTokens.push({
                 id: figmaVar.name,
