@@ -1,5 +1,6 @@
 import { TFigmaThemeName } from '../figmaTokensGen/types/sharedTypes';
 import { PATH } from '../figmaTokensGen/constants';
+import { figmaVarComparator } from '../figmaTokensGen/main';
 
 const THEME_DIR = './epam-assets/theme';
 
@@ -38,7 +39,7 @@ export const coreMixinGenTemplate = (
     } = params;
 
     const mapToSortedArr = (map: Map<string, unknown>) => {
-        return [...map.entries()].sort((e1, e2) => e1[0].localeCompare(e2[0]));
+        return [...map.entries()].sort((e1, e2) => figmaVarComparator(e1[0], e2[0]));
     };
 
     const indent1 = new Array(4).fill(' ').join('');

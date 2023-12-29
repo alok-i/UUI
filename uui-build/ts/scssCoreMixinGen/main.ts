@@ -2,8 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { createFileSync, uuiRoot } from '../jsBridge';
 import { IUuiTokensCollection, TFigmaThemeName } from '../figmaTokensGen/types/sharedTypes';
-import { PATH } from '../figmaTokensGen/constants';
-import { coreMixinGenTemplate, coreThemeMixinsConfig } from './constants';
+import { coreMixinGenTemplate, coreThemeMixinsConfig, tokensFile } from './constants';
 
 main();
 
@@ -16,7 +15,7 @@ function main() {
 }
 
 function readFigmaTokens(): IUuiTokensCollection {
-    const content = fs.readFileSync(path.resolve(uuiRoot, PATH.FIGMA_VARS_COLLECTION_OUT_TOKENS)).toString();
+    const content = fs.readFileSync(path.resolve(uuiRoot, tokensFile)).toString();
     return JSON.parse(content);
 }
 
@@ -28,22 +27,24 @@ function genForFigmaTheme(params: { figmaTheme: TFigmaThemeName, tokens: IUuiTok
 
     tokens.supportedTokens.forEach(({ valueByTheme, cssVar }) => {
         const valueChain = valueByTheme[figmaTheme]?.valueChain;
-        const valueAliases = valueChain?.alias;
-        const explicitValue = valueChain?.value as string;
-        let cssVarValue: string;
-        if (valueAliases?.length) {
-            const firstAlias = valueAliases[0];
-            if (firstAlias.supported) {
-                cssVarValue = `var(${firstAlias.cssVar})`;
+        if (valueChain) {
+            const valueAliases = valueChain.alias;
+            const explicitValue = valueChain.value as string;
+            let cssVarValue: string;
+            if (valueAliases?.length) {
+                const firstAlias = valueAliases[0];
+                if (firstAlias.supported) {
+                    cssVarValue = `var(${firstAlias.cssVar})`;
+                } else {
+                    const scssVarName = '-' + firstAlias.id.replace(/\//g, '_');
+                    cssVarValue = `$${scssVarName}`;
+                    scssVars.set(scssVarName, explicitValue);
+                }
             } else {
-                const scssVarName = '-' + firstAlias.id.replace(/\//g, '_');
-                cssVarValue = `$${scssVarName}`;
-                scssVars.set(scssVarName, explicitValue);
+                cssVarValue = explicitValue;
             }
-        } else {
-            cssVarValue = explicitValue;
+            cssVars.set(cssVar, cssVarValue);
         }
-        cssVars.set(cssVar, cssVarValue);
     });
 
     //

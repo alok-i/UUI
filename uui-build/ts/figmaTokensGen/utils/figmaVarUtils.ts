@@ -30,23 +30,30 @@ export function isFigmaVarSupported(params: { path: string, theme?: TFigmaThemeN
     const { path, theme } = params;
     const config = getFigmaVarConfig(path);
     if (config) {
-        const { blacklist, whitelist, pathToCssVar } = config;
-        const cssVar = pathToCssVar(path);
+        const { blacklist, whitelist } = config;
         let isIncludedByWhiteList = true;
         if (whitelist) {
-            if (theme) {
-                const themeSpecificWl = whitelist[theme];
-                isIncludedByWhiteList = themeSpecificWl.indexOf(cssVar) !== -1;
+            const wlItem = whitelist[path];
+            if (wlItem) {
+                if (theme) {
+                    isIncludedByWhiteList = wlItem.indexOf(theme) !== -1;
+                } else {
+                    isIncludedByWhiteList = Object.values(TFigmaThemeName).some((themeItem) => {
+                        return wlItem.indexOf(themeItem) !== -1;
+                    });
+                }
             } else {
-                isIncludedByWhiteList = Object.values(TFigmaThemeName).some((themeItem) => {
-                    const themeSpecificWl = whitelist[themeItem];
-                    return themeSpecificWl.indexOf(cssVar) !== -1;
-                });
+                isIncludedByWhiteList = false;
             }
         }
         let isIncludedByBlackList = true;
         if (blacklist) {
-            isIncludedByBlackList = blacklist.indexOf(cssVar) === -1;
+            const blItem = blacklist[path];
+            if (blItem) {
+                isIncludedByBlackList = Object.values(TFigmaThemeName).some((themeItem) => {
+                    return blItem.indexOf(themeItem) === -1;
+                });
+            }
         }
         return isIncludedByWhiteList && isIncludedByBlackList;
     }
