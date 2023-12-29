@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { createFileSync, uuiRoot } from '../jsBridge';
+import { createFileSync, logger, uuiRoot } from '../jsBridge';
 import { IUuiTokensCollection, TFigmaThemeName } from '../figmaTokensGen/types/sharedTypes';
 import { coreMixinGenTemplate, coreThemeMixinsConfig, tokensFile } from './constants';
 
@@ -8,9 +8,12 @@ main();
 
 function main() {
     const tokens = readFigmaTokens();
-    genForFigmaTheme({
-        tokens,
-        figmaTheme: TFigmaThemeName.LOVESHIP_LIGHT,
+
+    Object.values(TFigmaThemeName).forEach((figmaTheme) => {
+        genForFigmaTheme({
+            tokens,
+            figmaTheme,
+        });
     });
 }
 
@@ -23,11 +26,13 @@ function genForFigmaTheme(params: { figmaTheme: TFigmaThemeName, tokens: IUuiTok
     const { figmaTheme, tokens } = params;
 
     const scssVars = new Map<string, string>();
-    const cssVars = new Map<string, string>();
 
-    tokens.supportedTokens.forEach(({ valueByTheme, cssVar }) => {
+    const cssVarsByGroup: Record<string, Map<string, string>> = {};
+
+    tokens.supportedTokens.forEach(({ valueByTheme, cssVar, id }) => {
         const valueChain = valueByTheme[figmaTheme]?.valueChain;
         if (valueChain) {
+            const groupId = id.substring(0, id.lastIndexOf('/'));
             const valueAliases = valueChain.alias;
             const explicitValue = valueChain.value as string;
             let cssVarValue: string;
@@ -43,36 +48,22 @@ function genForFigmaTheme(params: { figmaTheme: TFigmaThemeName, tokens: IUuiTok
             } else {
                 cssVarValue = explicitValue;
             }
-            cssVars.set(cssVar, cssVarValue);
+            if (!cssVarsByGroup[groupId]) {
+                cssVarsByGroup[groupId] = new Map();
+            }
+            cssVarsByGroup[groupId].set(cssVar, cssVarValue);
         }
     });
 
-    //
-    // Validate theme file
-    const themeFilePathRel = coreThemeMixinsConfig[figmaTheme].themeFile;
-    const themeFileContent = fs.readFileSync(path.resolve(uuiRoot, themeFilePathRel)).toString();
-    const referencedVars = getAllReferencedCssVars(themeFileContent);
-
-    const unknownVars = retainUnique(referencedVars, new Set(cssVars.keys()));
-
-    let errors = '';
-    if (unknownVars.size > 0) {
-        errors = [
-            '/*',
-            ' *    ERROR',
-            ` *    Next CSS variables are referenced in ${themeFilePathRel}.`,
-            ' *    But they aren\'t defined here.',
-            [...unknownVars].map((v) => ` *    ${v}`).join('\n'),
-            '*/',
-            '',
-        ].join('\n');
-    }
-
-    const content = coreMixinGenTemplate({ cssVars, scssVars, errors });
+    const errors = '';
+    const content = coreMixinGenTemplate({ cssVarsByGroup, scssVars, errors });
     const mixinsPath = coreThemeMixinsConfig[figmaTheme].mixinsFile;
-    createFileSync(path.resolve(uuiRoot, mixinsPath), content);
+    const mixinsPathRes = path.resolve(uuiRoot, mixinsPath);
+    createFileSync(mixinsPathRes, content);
+    logger.success(`File created: ${mixinsPathRes}`);
 }
 
+/*
 function getAllReferencedCssVars(scssFileContent: string) {
     const regexpReferenced = /var\((--[a-zA-Z0-9-]+)\);/gim;
     const resReferenced = [...scssFileContent.matchAll(regexpReferenced)];
@@ -102,3 +93,4 @@ function retainUnique(origSet: Set<string>, setToExclude: Set<string>) {
     });
     return retained;
 }
+*/
