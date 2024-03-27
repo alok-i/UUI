@@ -5,6 +5,9 @@ import { PreviewQueryHelpers, usePreviewParams } from './previewQueryHelpers';
 import { TComponentPreviewParams } from './componentPreview/types';
 import { PlayWriteInterfaceName } from './componentPreview/constants';
 
+import css from './previewPage.module.scss';
+import { useLayoutEffectSafeForSsr } from '@epam/uui-core';
+
 export function PreviewPage() {
     const params = usePreviewParams();
     const theme = params.theme;
@@ -37,9 +40,18 @@ export function PreviewPage() {
 
     usePlayWriteInterface(handleNavPreview);
 
+    useLayoutEffectSafeForSsr(() => {
+        const style = document.body.style;
+        const prev = style.backgroundColor;
+        style.backgroundColor = 'var(--uui-surface-main)';
+        return () => {
+            style.backgroundColor = prev;
+        };
+    }, []);
+
     const key = `${theme}_${isSkin}_${componentId}_${previewId}`;
     return (
-        <Page renderHeader={ () => null }>
+        <Page renderHeader={ () => null } rootCx={ css.root }>
             <ComponentPreview
                 key={ key }
                 params={ currentParams }

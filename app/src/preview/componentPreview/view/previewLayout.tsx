@@ -35,7 +35,7 @@ const PREVIEW_REGION_ATTRS = {
 };
 
 export function PreviewLayout(props: IPreviewLayout) {
-    const sectionRef = useRef<HTMLElement>();
+    const sectionRef = useRef<HTMLDivElement>();
     const [layoutHeight, setLayoutHeight] = useState<number>(0);
     const { renderCell, renderToolbar, isLoaded, cellSize, totalNumberOfCells, error } = props;
 
@@ -122,15 +122,15 @@ export function PreviewLayout(props: IPreviewLayout) {
     }
 
     return (
-        <FlexRow cx={ css.root } rawProps={ { ...commonAttrs, style: { width: layoutSize.layoutFixedWidth } } }>
+        <FlexRow cx={ css.root } rawProps={ commonAttrs }>
             <FlexCell cx={ css.toolbar } rawProps={ TOOLBAR_REGION_ATTRS }>
                 { renderToolbar() }
             </FlexCell>
-            <FlexCell cx={ css.previewWrapper } rawProps={ PREVIEW_REGION_ATTRS }>
+            <FlexCell cx={ css.previewWrapper } rawProps={ { ...PREVIEW_REGION_ATTRS, style: { width: layoutSize.layoutFixedWidth } } }>
                 { renderErr() }
-                <FlexRow cx={ css.preview } ref={ sectionRef }>
+                <div className={ css.preview } ref={ sectionRef }>
                     { renderAllCells() }
-                </FlexRow>
+                </div>
             </FlexCell>
         </FlexRow>
     );
