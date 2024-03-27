@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "strict": true,
+    "preserveConstEnums": true,
+    "noEmit": true,
+    "rootDir": ".",
+    "baseUrl": ".",
+    "isolatedModules": true,
+    "moduleResolution": "Node"
+  },
+  "exclude": [
+    "node_modules",
+    ".reports"
+  ]
+}
