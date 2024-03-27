@@ -14,6 +14,7 @@ import { DemoErrorBoundary } from './DemoErrorBoundary';
 import css from './ComponentEditorView.module.scss';
 import { PeTable } from './peTable/PeTable';
 import { buildNormalizedInputValuesMap } from '../propDocUtils';
+import { TPreviewRef } from '../../../../preview/componentPreview/utils/previewLinkUtils';
 
 type TInputData<TProps> = {
     [name in keyof TProps]: {
@@ -42,6 +43,7 @@ interface IComponentEditorViewProps<TProps> {
     onClearProp: (name: keyof TProps) => void;
     onPropValueChange: (params: { prop: PropDoc<TProps, keyof TProps>, newValue: TProps[keyof TProps] }) => void;
     onPropExampleIdChange: (params: { prop: PropDoc<TProps, keyof TProps>, newExampleId: string | undefined }) => void;
+    onBuildPreviewRef: () => TPreviewRef;
 }
 export function ComponentEditorView<TProps = PropDocPropsUnknown>(props: IComponentEditorViewProps<TProps>) {
     const demoComponentProps = React.useMemo(() => {
@@ -79,6 +81,7 @@ export function ComponentEditorView<TProps = PropDocPropsUnknown>(props: ICompon
                 propDoc={ props.propDoc }
                 title={ props.title }
                 typeRef={ props.generatedFromType }
+                previewRef={ props.onBuildPreviewRef() }
             >
                 <DemoCode
                     demoComponentProps={ demoComponentProps }

@@ -5,6 +5,7 @@ import { Icon } from '@epam/uui-core';
 export interface DemoComponentProps<TProps = PropDocPropsUnknown> {
     DemoComponent: React.ComponentType<TProps> | React.NamedExoticComponent<TProps>;
     props: TProps;
+    isPreview?: boolean;
 }
 
 export interface IComponentDocs<TProps> {
@@ -12,6 +13,7 @@ export interface IComponentDocs<TProps> {
     component?: React.ComponentType<TProps> | React.NamedExoticComponent<TProps>;
     props?: PropDoc<TProps, keyof TProps>[];
     contexts?: DemoContext<TProps>[];
+    getPropExamplesMap?: <TProp extends keyof TProps>(propName: TProp) => { [exampleName: string] : PropExampleObject<TProp> }
 }
 
 export interface DemoContext<TProps> {
@@ -107,3 +109,56 @@ export type IconBase<TIcon> = {
     name: string;
     path: string;
 };
+
+type TPreviewPropsItemMatrixValues<TProps = any, TProp extends keyof TProps = any> = {
+    /** Array of values to be directly passed to the component */
+    values: TProps[TProp][];
+    examples?: never;
+};
+type TPreviewPropsItemMatrixExamples = {
+    /**
+     * Array of example names or just a "*" which means all examples.
+     * NOTE: it is NOT array of example ids, because ids are numeric and thus difficult to maintain.
+     */
+    examples: string[] | '*';
+    values?: never;
+};
+
+type TCellSize = 60 | 80 | 120 | 140 | 160 | 200 | 240 | 280 | 320 | 480 | 640 | 1280;
+/**
+ * Cell 'width-height'. E.g.: `100-200` (means 100px width and 200px height)
+ *
+ * Each "render case" is displayed inside a preview cell. This is cell size.
+ *
+ * The total width is fixed to 1280px.
+ * The total height is dynamic and depends on total amount of cells and the cell size.
+ */
+export type TPreviewCellSize = `${TCellSize}-${TCellSize}`;
+
+export type TPreviewPropsItemRenderCases = {
+    id: string;
+    context: TDocContext;
+    cellSize: TPreviewCellSize | undefined;
+    props: Record<string, unknown>[];
+};
+export type TComponentPreview<TProps, TProp extends keyof TProps = keyof TProps> = {
+    /** A unique ID of the preview props which can be referenced by test automation */
+    id: string;
+    /**  TDocContext.Default will be used is nothing is passed */
+    context?: TDocContext;
+    /**
+     * A map of prop names to prop values/examples.
+     * The component will be repeated more than once in order to render all possible combinations: all-props/all-values/all-examples.
+     */
+    matrix: {
+        /**
+         * Property name
+         */
+        [prop in TProp]?: TPreviewPropsItemMatrixValues<TProps, prop> | TPreviewPropsItemMatrixExamples;
+    },
+    /**
+     * 'width-height'
+     */
+    cellSize?: TPreviewCellSize | undefined;
+};
+export type TComponentPreviewList<TProps> = TComponentPreview<TProps>[];

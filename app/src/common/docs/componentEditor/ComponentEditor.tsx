@@ -1,12 +1,11 @@
 import * as React from 'react';
 import {
-    IComponentDocs,
     TDocConfig,
     TSkin,
     TDocsGenExportedType,
     useDocBuilderGen,
     PropDocPropsUnknown,
-    PropDocUnknown,
+    PropDocUnknown, TDocContext, DocBuilder,
 } from '@epam/uui-docs';
 import { ComponentEditorView } from './view/ComponentEditorView';
 import { getSkin } from './utils';
@@ -21,6 +20,8 @@ import {
     rebuildInputDataExamples,
     updatePropInputData,
 } from './propDocUtils';
+import { useQuery } from '../../../helpers';
+import { buildPreviewRef } from '../../../preview/componentPreview/utils/previewLinkUtils';
 
 export function ComponentEditorWrapper(props: {
     theme: TTheme,
@@ -36,6 +37,7 @@ export function ComponentEditorWrapper(props: {
         config,
         onRedirectBackToDocs,
     } = props;
+    const componentId = useQuery('id');
     const skin = getSkin(theme, isSkin);
     const { isLoaded, docs, generatedFromType } = useDocBuilderGen({ config, skin, loadDocsGenType });
 
@@ -47,6 +49,9 @@ export function ComponentEditorWrapper(props: {
 
     return (
         <ComponentEditor
+            isSkin={ isSkin }
+            theme={ theme }
+            componentId={ componentId }
             isLoaded={ isLoaded }
             onRedirectBackToDocs={ onRedirectBackToDocs }
             docs={ docs }
@@ -58,9 +63,12 @@ export function ComponentEditorWrapper(props: {
 }
 
 interface ComponentEditorProps {
-    docs?: IComponentDocs<PropDocPropsUnknown>;
+    docs?: DocBuilder<PropDocPropsUnknown>;
     skin: TSkin;
     title: string;
+    isSkin: boolean;
+    theme: TTheme;
+    componentId: string;
     isLoaded: boolean;
     onRedirectBackToDocs: () => void;
     generatedFromType?: TDocsGenExportedType;
@@ -221,11 +229,25 @@ export class ComponentEditor extends React.Component<ComponentEditorProps, Compo
         this.setState({ selectedContext });
     };
 
+    handleBuildPreviewRef = () => {
+        const { isSkin, theme, componentId, docs } = this.props;
+        const { inputData } = this.state;
+        const context = this.getSelectedCtxName() as TDocContext;
+        return buildPreviewRef({ context, inputData, isSkin, theme, componentId, docs });
+    };
+
+    getSelectedCtxName = () => {
+        const { docs } = this.props;
+        const { selectedContext } = this.state;
+        const { contexts } = docs || {};
+        return selectedContext || (contexts?.length > 0 ? contexts[0].name : undefined);
+    };
+
     render() {
         const { title, docs, isLoaded, onRedirectBackToDocs, generatedFromType } = this.props;
-        const { inputData, selectedContext, isInited, componentKey } = this.state;
+        const { inputData, isInited, componentKey } = this.state;
         const { component: DemoComponent, name: tagName, contexts, props } = docs || {};
-        const selectedCtxName = selectedContext || (contexts?.length > 0 ? contexts[0].name : undefined);
+        const selectedCtxName = this.getSelectedCtxName();
         const isDocUnsupportedForSkin = isLoaded && !docs;
 
         return (
@@ -243,6 +265,7 @@ export class ComponentEditor extends React.Component<ComponentEditorProps, Compo
                 selectedCtxName={ selectedCtxName }
                 tagName={ tagName }
                 title={ title }
+                onBuildPreviewRef={ this.handleBuildPreviewRef }
                 onChangeSelectedCtx={ this.handleChangeContext }
                 onPropExampleIdChange={ this.handlePropExampleIdChange }
                 onPropValueChange={ this.handlePropValueChange }

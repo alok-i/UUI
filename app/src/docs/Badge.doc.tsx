@@ -3,23 +3,45 @@ import * as uui from '@epam/uui';
 import * as loveship from '@epam/loveship';
 import * as promo from '@epam/promo';
 import * as electric from '@epam/electric';
-import { COLOR_MAP, DocBuilder, getColorPickerComponent, TDocConfig, TDocContext, TSkin } from '@epam/uui-docs';
+import {
+    COLOR_MAP,
+    DocBuilder,
+    DocPreviewBuilder,
+    getColorPickerComponent,
+    TDocConfig,
+    TDocContext,
+    TSkin,
+} from '@epam/uui-docs';
 import { BaseDocsBlock, DocExample, EditableDocContent } from '../common';
 import { getCurrentTheme } from '../helpers';
 
 export class BadgeDoc extends BaseDocsBlock {
     title = 'Badge';
 
-    override config: TDocConfig = {
+    static override config: TDocConfig = {
         name: 'Badge',
         contexts: [TDocContext.Default, TDocContext.Form, TDocContext.Resizable],
         bySkin: {
-            [TSkin.UUI]: { type: '@epam/uui:BadgeProps', component: uui.Badge },
+            [TSkin.UUI]: {
+                type: '@epam/uui:BadgeProps',
+                component: uui.Badge,
+            },
             [TSkin.Loveship]: {
                 type: '@epam/loveship:BadgeProps',
                 component: loveship.Badge,
                 doc: (doc: DocBuilder<loveship.BadgeProps>) => {
                     doc.setDefaultPropExample('shape', ({ value }) => value === 'round');
+                },
+                preview: (docPreview: DocPreviewBuilder<loveship.BadgeProps>) => {
+                    docPreview.add({
+                        id: 'Sizes',
+                        matrix: {
+                            color: { values: ['info'] },
+                            shape: { examples: '*' },
+                            size: { examples: '*' },
+                        },
+                        cellSize: '160-60',
+                    });
                 },
             },
             [TSkin.Promo]: { type: '@epam/promo:BadgeProps', component: promo.Badge },
@@ -34,6 +56,24 @@ export class BadgeDoc extends BaseDocsBlock {
                     ...COLOR_MAP,
                     neutral: `var(--uui-${getCurrentTheme() === 'loveship_dark' ? 'neutral-40' : 'neutral-30'})`,
                 }),
+            });
+        },
+        preview: (docPreview: DocPreviewBuilder<uui.BadgeProps | promo.BadgeProps | loveship.BadgeProps | electric.BadgeProps>) => {
+            docPreview.add({
+                id: 'Colors',
+                matrix: {
+                    fill: { examples: '*' },
+                    color: { examples: '*' },
+                },
+                cellSize: '120-60',
+            });
+            docPreview.add({
+                id: 'Sizes',
+                matrix: {
+                    color: { values: ['info'] },
+                    size: { examples: '*' },
+                },
+                cellSize: '160-60',
             });
         },
     };

@@ -1,5 +1,5 @@
 import { PropDoc, TDocContext, TDocsGenExportedType, TSkin } from '../types';
-import { DocBuilder } from '../DocBuilder';
+import { DocBuilder, DocPreviewBuilder } from '../DocBuilder';
 import { TTypeProp } from '../docsGen/sharedTypes';
 import * as React from 'react';
 import { UuiContexts } from '@epam/uui-core';
@@ -30,7 +30,12 @@ export type TDocConfig = {
              * Override doc for this specific skin.
              * @param doc
              */
-            doc?: (doc: DocBuilder<any>) => void
+            doc?: (doc: DocBuilder<any>) => void,
+
+            /**
+             * Preview tab renders component
+             */
+            preview?: <TProps>(docPreview: DocPreviewBuilder<TProps>) => void;
         }
     };
     /**
@@ -38,4 +43,9 @@ export type TDocConfig = {
      * @param doc
      */
     doc?: (doc: DocBuilder<any>) => void;
+
+    /**
+     * Preview tab renders component
+     */
+    preview?: <TProps>(docPreview: DocPreviewBuilder<TProps>) => void;
 };

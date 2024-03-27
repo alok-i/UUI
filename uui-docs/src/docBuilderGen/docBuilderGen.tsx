@@ -1,5 +1,5 @@
 import { TSkin } from '../types';
-import { DocBuilder } from '../DocBuilder';
+import { DocBuilder, DocPreviewBuilder } from '../DocBuilder';
 import { docCommonOverride } from './docOverrides/docCommonOverride';
 import { buildPropDetails, buildPropFallbackDetails } from './propDetailsBuilders/build';
 import { TType, TTypeProp, TTypeRef } from '../docsGen/sharedTypes';
@@ -22,12 +22,13 @@ export async function docBuilderGen(params: IDocBuilderGenParams): Promise<DocBu
     const {
         name,
         contexts,
-        doc: skinCommonOverride,
+        doc: docCommon,
+        preview: previewCommon,
         bySkin,
     } = config;
     const forSkin = bySkin[params.skin];
     if (forSkin) {
-        const { doc: skinSpecificOverride, type: docGenType, component } = forSkin;
+        const { doc: docSkin, type: docGenType, component, preview: previewSkin } = forSkin;
         const { content: type } = await loadDocsGenType(docGenType);
 
         const docs = new DocBuilder<any>({ name, component });
@@ -49,9 +50,15 @@ export async function docBuilderGen(params: IDocBuilderGenParams): Promise<DocBu
                 docs.prop(prop.name, nextProp);
             }
         });
+
+        const previewBuilder = new DocPreviewBuilder();
+        docs.setDocPreview(previewBuilder);
+        previewCommon?.(previewBuilder);
+        previewSkin?.(previewBuilder);
+
         docCommonOverride({ docs, contexts });
-        skinCommonOverride?.(docs);
-        skinSpecificOverride?.(docs);
+        docCommon?.(docs);
+        docSkin?.(docs);
 
         unresolvedProps.forEach((prop) => {
             const found = docs.props.find((p) => p.name === prop.name);

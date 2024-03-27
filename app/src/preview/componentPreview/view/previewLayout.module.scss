@@ -1,0 +1,42 @@
+.spinner {
+    height: 95vh;
+}
+
+.root {
+    /* test automation screenshots rely on this width to be exactly equal EXACTLY 1280px. do not change. */
+    width: 1280px;
+    flex-direction: column;
+    align-items: flex-start;
+
+    .toolbar {
+        display: none;
+    }
+
+    .preview-wrapper {
+        flex-basis: auto;
+
+        .preview {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 24px;
+
+            .cell {
+                box-sizing: border-box;
+                overflow: hidden;
+                background-color: transparent;
+                width: 100%;
+                display: flex;
+                border: 1px dotted var(--uui-app-bg);
+
+                &:hover {
+                    border-color: var(--uui-text);
+                }
+            }
+        }
+    }
+}
+
+
+
+
+
