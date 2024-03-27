@@ -17,7 +17,7 @@ export function PreviewToolbar(props: IPreviewToolbar) {
     const hint2 = `window.${PlayWriteInterfaceName}(JSON.stringify(${hint1}));`;
     return (
         <div className={ css.root } title={ hint1 }>
-            <pre style={ { display: 'none' } }>{hint2}</pre>
+            <pre>{hint2}</pre>
         </div>
     );
 }

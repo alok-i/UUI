@@ -86,7 +86,7 @@ export class RenderCaseView extends React.PureComponent<ISingleRenderCaseView, I
         } catch (err) {}
 
         return (
-            <div className={ css.root } title={ propsStr }>
+            <div className={ css.root } data-props={ propsStr }>
                 <SelectedDemoContext
                     DemoComponent={ DemoComponent }
                     props={ inputValues }

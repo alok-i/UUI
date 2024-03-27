@@ -1,9 +1,5 @@
 .root {
     width: 100%;
-    height: 4px;
-    overflow: hidden;
-
-    &:hover {
-        background-color: var(--uui-surface-highest);
-    }
+    height: auto;
+    padding: 0 24px 0 24px;
 }
