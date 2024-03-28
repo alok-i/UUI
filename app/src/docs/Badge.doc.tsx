@@ -40,7 +40,7 @@ export class BadgeDoc extends BaseDocsBlock {
                             shape: { examples: '*' },
                             size: { examples: '*' },
                         },
-                        cellSize: '200-60',
+                        cellSize: '150-60',
                     });
                 },
             },
@@ -65,7 +65,7 @@ export class BadgeDoc extends BaseDocsBlock {
                     fill: { examples: '*' },
                     color: { examples: '*' },
                 },
-                cellSize: '200-60',
+                cellSize: '140-50',
             });
             docPreview.add({
                 id: 'Sizes',
@@ -73,7 +73,7 @@ export class BadgeDoc extends BaseDocsBlock {
                     color: { values: ['info'] },
                     size: { examples: '*' },
                 },
-                cellSize: '200-60',
+                cellSize: '150-60',
             });
         },
     };

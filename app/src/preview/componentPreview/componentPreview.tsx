@@ -18,8 +18,8 @@ const ERR = {
             'Please make sure such component exists in "app/src/documents/structureComponents.ts" and at least one preview is defined for selected theme/skin.',
         ].join('\n');
     },
-    PREVIEW_IS_NOT_SELECTED: 'Preview ID is not selected',
-    COMPONENT_IS_NOT_SELECTED: 'Component ID is not selected',
+    PREVIEW_IS_MISSING: 'Preview ID is missing',
+    COMPONENT_IS_MISSING: 'Component ID is missing',
 };
 
 export function ComponentPreview(props: {
@@ -73,7 +73,7 @@ export function ComponentPreview(props: {
     const error = useMemo(() => {
         if (isLoaded) {
             if (!componentId) {
-                return ERR.COMPONENT_IS_NOT_SELECTED;
+                return ERR.COMPONENT_IS_MISSING;
             }
             if (!compConfig) {
                 return ERR.UNKNOWN_COMPONENT_OR_NO_PREVIEW({ componentId });

@@ -57,7 +57,7 @@ export function buildPreviewRef(params: TBuildPreviewLinkParams): TPreviewRef {
     const link = `${baseLink}&previewId=${encodeInlinePreviewPropsForUrl(previewProps)}`;
     let error;
     if (unableToSerialize.length) {
-        error = `Next props cannot be serialized for URL and will be excluded: ${unableToSerialize.join(', ')}.`;
+        error = `The props listed below cannot be serialized for URL and will be excluded. You might want to include them as examples instead: ${unableToSerialize.join(', ')}`;
     }
 
     const predefinedPreviewRefs = docs.docPreview?.listOfPreviews.map((pp) => {

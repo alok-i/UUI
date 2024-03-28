@@ -1,5 +1,6 @@
 .spinner {
     height: 95vh;
+    align-self: center;
 }
 
 .root {
@@ -18,7 +19,7 @@
         .preview {
             display: flex;
             flex-wrap: wrap;
-            padding: 24px;
+            padding: 0;
 
             .cell {
                 box-sizing: border-box;

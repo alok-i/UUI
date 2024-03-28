@@ -6,13 +6,12 @@ import {
 } from '@epam/uui';
 //
 import css from './previewLayout.module.scss';
-import { useCallback, useMemo, useRef, useState } from 'react';
-import { useLayoutEffectSafeForSsr } from '@epam/uui-core';
+import { useCallback, useMemo } from 'react';
+import { cx } from '@epam/uui-core';
 import {
     CELL_SIZE_DEFAULT_PX,
     SIDE_PADDING_OF_LAYOUT_PX,
     MAX_ALLOWED_LAYOUT_WIDTH_PX,
-    SECTION_HEIGHT_LIMIT,
 } from '../constants';
 import { TPreviewCellSize } from '@epam/uui-docs';
 
@@ -35,36 +34,19 @@ const PREVIEW_REGION_ATTRS = {
 };
 
 export function PreviewLayout(props: IPreviewLayout) {
-    const sectionRef = useRef<HTMLDivElement>();
-    const [layoutHeight, setLayoutHeight] = useState<number>(0);
     const { renderCell, renderToolbar, isLoaded, cellSize, totalNumberOfCells, error } = props;
 
-    useLayoutEffectSafeForSsr(() => {
-        if (sectionRef.current) {
-            setLayoutHeight(sectionRef.current.offsetHeight);
-        }
-    });
-
     const renderErr = useCallback(() => {
-        let errMsg;
         if (error) {
-            errMsg = error;
-        } else {
-            const isTooTall = layoutHeight > SECTION_HEIGHT_LIMIT;
-            if (isTooTall) {
-                errMsg = `Section height should not exceed ${SECTION_HEIGHT_LIMIT} px. Actual height: ${layoutHeight} px.`;
-            }
-        }
-        if (errMsg) {
             return (
                 <ErrorAlert>
-                    <Text size="30">{ errMsg }</Text>
+                    <Text size="30">{ error }</Text>
                 </ErrorAlert>
 
             );
         }
         return null;
-    }, [layoutHeight, error]);
+    }, [error]);
 
     const layoutSize = useMemo(() => {
         const [
@@ -110,28 +92,32 @@ export function PreviewLayout(props: IPreviewLayout) {
         role: 'region',
         'aria-label': PREVIEW_REGION_ATTRS['aria-label'],
         'aria-busy': !isLoaded,
-        'data-e2e-testid': PREVIEW_REGION_ATTRS['aria-label'],
     };
-
-    if (!isLoaded) {
-        return (
-            <div className={ css.spinner } { ...commonAttrs }>
-                <Spinner />
-            </div>
-        );
-    }
 
     return (
         <FlexRow cx={ css.root } rawProps={ commonAttrs }>
-            <FlexCell cx={ css.toolbar } rawProps={ TOOLBAR_REGION_ATTRS }>
-                { renderToolbar() }
-            </FlexCell>
-            <FlexCell cx={ css.previewWrapper } rawProps={ { ...PREVIEW_REGION_ATTRS, style: { width: layoutSize.layoutFixedWidth } } }>
-                { renderErr() }
-                <div className={ css.preview } ref={ sectionRef }>
-                    { renderAllCells() }
-                </div>
-            </FlexCell>
+            {
+                !isLoaded && (
+                    <div className={ css.spinner }>
+                        <Spinner />
+                    </div>
+                )
+            }
+            {
+                isLoaded && (
+                    <>
+                        <FlexCell cx={ css.toolbar } rawProps={ TOOLBAR_REGION_ATTRS }>
+                            { renderToolbar() }
+                        </FlexCell>
+                        <FlexCell cx={ css.previewWrapper } rawProps={ { style: { width: layoutSize.layoutFixedWidth } } }>
+                            { renderErr() }
+                            <div className={ cx(css.preview) }>
+                                { renderAllCells() }
+                            </div>
+                        </FlexCell>
+                    </>
+                )
+            }
         </FlexRow>
     );
 }

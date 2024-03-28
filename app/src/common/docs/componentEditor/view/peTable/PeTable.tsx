@@ -70,7 +70,7 @@ const PeTableToolbar = React.memo(
             return (
                 <>
                     <Text size="30">Open Preview</Text>
-                    { err && <Text size="30" color="critical">{ err }</Text> }
+                    { err && <Text size="30" color="warning">{ err }</Text> }
                 </>
             );
         };

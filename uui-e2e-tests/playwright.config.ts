@@ -8,7 +8,7 @@ const { UUI_APP_BASE_URL } = readEnvFile();
 
 const maxFailures = isCi ? 10 : undefined;
 const retries = isCi ? 1 : 0;
-const workers = isCi ? 1 : undefined;
+const workers = isCi ? 1 : 1;
 const forbidOnly = isCi;
 const trace = (isCi ? 'retry-with-trace' : 'retain-on-failure') as TraceMode;
 const server = {
@@ -21,6 +21,7 @@ const testMatch = `${parentDir}tests/screenshots.e2e.ts`;
 const outputDir = `${parentDir}tests/.report/results`;
 const outputFolder = `${parentDir}tests/.report/report`;
 const snapshotPathTemplate = '{testFileDir}/__screenshots__/{projectName}/{arg}{ext}';
+export const stylePath = `${parentDir}tests/screenshot.css`;
 
 export default defineConfig({
     timeout: 50000,

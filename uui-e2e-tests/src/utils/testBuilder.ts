@@ -61,12 +61,12 @@ function createSingleScreenshotTest(
     test.describe(() => {
         test(testName, async ({ previewPage }) => {
             await previewPage.editPreview(pageParams);
-            const opts = await previewPage.getScreenshotOptions();
+            await previewPage.waitBeforeScreenshot();
 
             if (builderParams.onBeforeAssertion) {
                 await builderParams.onBeforeAssertion({ previewPage, pageParams });
             }
-            await expect(previewPage.page).toHaveScreenshot(`${testName}.png`, opts);
+            await expect(previewPage.page).toHaveScreenshot(`${testName}.png`, { fullPage: true });
         });
     });
 }

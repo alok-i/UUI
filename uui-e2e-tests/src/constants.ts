@@ -1,6 +1,7 @@
 import { PlaywrightTestOptions } from '@playwright/test';
 
 export const PREVIEW_URL = '/preview';
+export const PlayWriteInterfaceName = '_uui_playwrite_interface';
 
 /**
  * Keep in sync with app/src/documents/structureComponents.ts
@@ -100,7 +101,7 @@ export const SHARED_DEVICE_CFG: Record<string, Partial<PlaywrightTestOptions>> =
         timezoneId: 'EET',
         viewport: {
             width: 480,
-            height: 80,
+            height: 60,
         },
     },
 };
